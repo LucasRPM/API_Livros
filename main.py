@@ -1,10 +1,17 @@
 #CRUD (Create, Read, Update, Delete)
 
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import Optional
+
+class Livro(BaseModel):
+    titulo: str
+    autor: str
+    ano: int
 
 app = FastAPI()
 
-dicionario = {
+"""dicionario = {
     1 : {"titulo": "Jogador Nº1", "autor": "Ernest Cline", "ano": 2011},
     2 : {"titulo": "Senhor dos Anéis", "autor": "J.R.R. Tolkien", "ano": 1954},
     3 : {"titulo": "Harry Potter e a Pedra Filosofal", "autor": "J.K. Rowling", "ano": 1997},
@@ -15,8 +22,11 @@ dicionario = {
     8 : {"titulo": "A saga do herdeiro", "autor": "Brandon Sanderson", "ano": 2015},
     9 : {"titulo": "Mistborn: O Império Final", "autor": "Brandon Sanderson", "ano": 2006},
     10 : {"titulo": "A máscara da loucura", "autor": "Brandon Sanderson", "ano": 2006},
-}
+}"""
 
+dicionario = {}
+
+#GET--------------------------------------------------------------------------------
 @app.get("/livros")
 def get_livros():
     if not dicionario:
@@ -31,28 +41,26 @@ def get_livro(id: int):
     else:
         return dicionario[id]
 
+#POST------------------------------------------------------------------------------
 @app.post("/adicionar")
-def adicionar_livro(titulo: str, autor: str, ano: int):
-    for livro in dicionario.values():
-        if livro["titulo"] == titulo:
-            raise HTTPException(status_code=400, detail="Livro já cadastrado")
-    
-    dicionario[len(dicionario)+1] = {"titulo": titulo, "autor": autor, "ano": ano}
-    return {"message": "Livro adicionado com sucesso"}
+def adicionar_livro(id: int, livro: Livro):
+    if id in dicionario:
+        raise HTTPException(status_code=400, detail="Livro já cadastrado")
+    else:
+        dicionario[id] = livro.dict()
+        return {"message": "Livro adicionado com sucesso"}
 
+#PUT--------------------------------------------------------------------------------
 @app.put("/atualizar/{id}")
-def atualizar_livro(id: int, titulo: str = None, autor: str = None, ano: int = None):
+def atualizar_livro(id: int, livro:Livro):
+    livro_atualizado = dicionario.get(id)
     if id not in dicionario:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
     else:
-        if titulo:
-            dicionario[id]["titulo"] = titulo
-        if autor:
-            dicionario[id]["autor"] = autor
-        if ano:
-            dicionario[id]["ano"] = ano
+        livro_atualizado[id] = livro.dict()
         return {"message": "Livro atualizado com sucesso"}
 
+#DELETE----------------------------------------------------------------------------
 @app.delete("/deletar/{id}")
 def deletar_livro(id: int):
     if id not in dicionario:
