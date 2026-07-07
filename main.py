@@ -54,10 +54,10 @@ def adicionar_livro(id: int, livro: Livro):
 @app.put("/atualizar/{id}")
 def atualizar_livro(id: int, livro:Livro):
     livro_atualizado = dicionario.get(id)
-    if id not in dicionario:
+    if not livro_atualizado:
         raise HTTPException(status_code=404, detail="Livro não encontrado")
     else:
-        livro_atualizado[id] = livro.dict()
+        dicionario[id] = livro.dict()
         return {"message": "Livro atualizado com sucesso"}
 
 #DELETE----------------------------------------------------------------------------
